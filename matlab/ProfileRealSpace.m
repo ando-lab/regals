@@ -40,18 +40,29 @@ classdef ProfileRealSpace < ProfileClass
 
         % SAXS PROFILE-RELATED GET METHODS (see Nifty.m)
         function val = get.F(obj)
-            val = 4*pi*obj.dw*sinc(obj.q(:)*obj.w'/pi);
+            %
+            % oct 22, 2020: removed sinc function (requires signal
+            % processing toolbox)
+            %val = 4*pi*obj.dw*sinc(obj.q(:)*obj.w'/pi);
+            qr = obj.q(:)*obj.w';
+            val = sin(qr)./qr;
+            val(qr==0) = 1;
+            val = 4*pi*obj.dw*val;
             val(:,[1,end]) = 0.5*val(:,[1,end]); % trapezoid rule
         end
+
         function val = get.k(obj)
             val = obj.Nw - obj.isZeroAtDmax - obj.isZeroAtR0;
         end
+
         function val = get.dw(obj)
             val = obj.dmax/(obj.Nw-1);
         end
+
         function val = get.w(obj)
             val = obj.dmax*linspace(0,1,obj.Nw)';
         end
+
         function val = get.u0(obj)
             val = 1 - ( 2*obj.w/obj.dmax - 1).^2;
             val = val/(4*pi*obj.dw*sum(val)); % normalize to I(0)=1
@@ -62,6 +73,7 @@ classdef ProfileRealSpace < ProfileClass
                 val = val(2:end);
             end
         end
+
         function val = norm(obj,u)
             % return I(0)
             weight = 4*pi*obj.dw*ones(obj.Nw,1);
@@ -74,9 +86,7 @@ classdef ProfileRealSpace < ProfileClass
             end
             val = sum(weight.*u(:));
         end
-        %function val = get.Nq(obj)
-        %    val = length(obj.q);
-        %end
+
         function val = get.L(obj)
             val = sparse(1:(obj.Nw-2),1:(obj.Nw-2),-.5,obj.Nw-2,obj.Nw) + ...
                 sparse(1:(obj.Nw-2),2:(obj.Nw-1),1,obj.Nw-2,obj.Nw) + ...
@@ -88,6 +98,7 @@ classdef ProfileRealSpace < ProfileClass
                 val = val(:,2:end);
             end
         end
+
         function val = get.A(obj)
             val = obj.F;
 
@@ -98,5 +109,6 @@ classdef ProfileRealSpace < ProfileClass
                 val = val(:,2:end);
             end
         end
+
     end
 end
