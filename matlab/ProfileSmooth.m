@@ -10,7 +10,7 @@ classdef ProfileSmooth < ProfileClass
 
         % INTERFACE REQUIRED BY SUPERCLASS (F,w,k,l,A)
         F  % linear interpolation operator: I(q) = F*ws
-        w  % vector of points sampling the peak
+        w  % vector of points sampling the concentration
         k  % number of coefficients of ws which are free
         L  % second derivative operator: W''(s) = Ls*W(s) [here, W(s) is of length ks]
         A  % truncated and error-weighted interpolation matrix (Ns by ks)

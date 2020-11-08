@@ -1,4 +1,4 @@
-classdef PeakSimple < PeakClass
+classdef ConcentrationSimple < ConcentrationClass
     properties
         % DEFINED BY SUPERCLASS
         % x
@@ -22,7 +22,7 @@ classdef PeakSimple < PeakClass
         % Nx % = length(x)
     end
     methods
-        function obj = PeakSimple(varargin)
+        function obj = ConcentrationSimple(varargin)
             if ~isempty(varargin)
                 for j=1:2:length(varargin)
                     obj.(varargin{j}) = varargin{j+1};
@@ -30,13 +30,13 @@ classdef PeakSimple < PeakClass
             end
         end
 
-        % PEAK PROFILE-RELATED GET METHODS (see Humpty.m)
+        % CONCENTRATION PROFILE-RELATED GET METHODS (see Humpty.m)
         function val = get.F(obj)
             thisx = obj.x(:);
             thisw = obj.w;
-            [isInPeak,indInW] = ismember(thisx,thisw);
+            [isInConcentration,indInW] = ismember(thisx,thisw);
             v = (1:obj.Nx)';
-            val = sparse(v(isInPeak),indInW(isInPeak),1,obj.Nx,length(thisw));
+            val = sparse(v(isInConcentration),indInW(isInConcentration),1,obj.Nx,length(thisw));
         end
         function val = get.k(obj)
             val = obj.Nw;

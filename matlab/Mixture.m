@@ -1,14 +1,14 @@
 classdef Mixture
     % MIXTURE - class representing the mixture model and functions for
-    % fitting either peaks or profiles.
+    % fitting either concentrations or profiles.
     %
     % This is used by algorithms such as REGALS to store the current state
     % of the optimization, and to prepare the matrices for least-squares.
     properties
         Components
-        peakLambda
+        concentrationLambda
         profileLambda
-        uPeak
+        uConcentration
         uProfile
     end
 
@@ -16,13 +16,13 @@ classdef Mixture
         Nc % number of components
         Nx
         Nq
-        kPeak
+        kConcentration
         kProfile
-        peaks
+        concentrations
         profiles
-        peakNorm
+        concentrationNorm
         profileNorm
-        peakH
+        concentrationH
         profileH
         Ireg
     end
@@ -37,11 +37,11 @@ classdef Mixture
                 obj.(varargin{j}) = varargin{j+1};
             end
 
-            if isempty(obj.uPeak)
-                % get default values for uPeak
-                obj.uPeak = cell(obj.Nc,1);
+            if isempty(obj.uConcentration)
+                % get default values for uConcentration
+                obj.uConcentration = cell(obj.Nc,1);
                 for j=1:obj.Nc
-                    obj.uPeak{j} = obj.Components(j).Peak.u0(:);
+                    obj.uConcentration{j} = obj.Components(j).Concentration.u0(:);
                 end
             end
 
@@ -53,8 +53,8 @@ classdef Mixture
                 end
             end
 
-            if isempty(obj.peakLambda)
-                obj.peakLambda = zeros(1,obj.Nc);
+            if isempty(obj.concentrationLambda)
+                obj.concentrationLambda = zeros(1,obj.Nc);
             end
 
             if isempty(obj.profileLambda)
@@ -67,16 +67,16 @@ classdef Mixture
         end
 
         function val = get.Nx(obj)
-            val = obj.Components(1).Peak.Nx;
+            val = obj.Components(1).Concentration.Nx;
         end
 
         function val = get.Nq(obj)
             val = obj.Components(1).Profile.Nq;
         end
 
-        function k = get.kPeak(obj)
-            Peaks = [obj.Components.Peak];
-            k = [Peaks.k];
+        function k = get.kConcentration(obj)
+            Concentrations = [obj.Components.Concentration];
+            k = [Concentrations.k];
         end
 
         function k = get.kProfile(obj)
@@ -85,18 +85,18 @@ classdef Mixture
         end
 
         function I = get.Ireg(obj)
-            I = obj.profiles*obj.peaks';
+            I = obj.profiles*obj.concentrations';
         end
 
-        function ll = estimatePeakLambda(obj,err,ng)
-            AA = obj.peakProblem(sparse(obj.Nq,obj.Nx),err);
+        function ll = estimateConcentrationLambda(obj,err,ng)
+            AA = obj.concentrationProblem(sparse(obj.Nq,obj.Nx),err);
 
             % break into sub-matrices for each component
-            AA = mat2cell(AA,obj.kPeak,obj.kPeak);
+            AA = mat2cell(AA,obj.kConcentration,obj.kConcentration);
 
             ll = zeros(1,obj.Nc);
             for k=1:obj.Nc
-                Lk = obj.Components(k).Peak.L;
+                Lk = obj.Components(k).Concentration.L;
                 [~,d] = eig(full(AA{k,k}),full(Lk'*Lk));
                 ll(k) = ng2lambda(diag(d),ng(k));
             end
@@ -136,7 +136,7 @@ classdef Mixture
             % apply error weight to data matrix
             D = w.*I;
 
-            c = obj.peaks;
+            c = obj.concentrations;
 
             % calculate AA = A'A
             for k1 = 1:nc
@@ -155,7 +155,7 @@ classdef Mixture
             Ab = cell2mat(Ab);
         end
 
-        function [AA,Ab] = peakProblem(obj,I,err)
+        function [AA,Ab] = concentrationProblem(obj,I,err)
             % assumes equal errorbars for each q-bin
 
             w = 1./mean(err,2); % average over q-bins
@@ -164,8 +164,8 @@ classdef Mixture
             AA = cell(nc,nc);
             Ab = cell(nc,1);
 
-            Peaks = [obj.Components.Peak];
-            A = {Peaks.A};
+            Concentrations = [obj.Components.Concentration];
+            A = {Concentrations.A};
 
             % apply error weight to data matrix
             D = (w.*I); % fit the transpose
@@ -194,7 +194,7 @@ classdef Mixture
 
         function [Ik,sigmak] = extractProfile(obj,I,err,k)
             notk = setdiff(1:obj.Nc,k);
-            c = obj.peaks;
+            c = obj.concentrations;
             y = obj.profiles;
             D = I - y(:,notk)*c(:,notk)';
             ck = c(:,k);
@@ -203,9 +203,9 @@ classdef Mixture
             sigmak = sqrt(err.^2*m.^2);
         end
 
-        function [pk,sigmak] = extractPeak(obj,I,err,k)
+        function [pk,sigmak] = extractConcentration(obj,I,err,k)
             notk = setdiff(1:obj.Nc,k);
-            c = obj.peaks;
+            c = obj.concentrations;
             y = obj.profiles;
             D = I - y(:,notk)*c(:,notk)';
             yk = y(:,k);
@@ -215,11 +215,11 @@ classdef Mixture
             sigmak = sqrt(err'.^2*m.^2);
         end
 
-        function H = get.peakH(obj)
+        function H = get.concentrationH(obj)
             B = cell(1,obj.Nc);
             for j=1:obj.Nc
-                L = obj.Components(j).Peak.L;
-                B{j} = L*sqrt(obj.peakLambda(j));
+                L = obj.Components(j).Concentration.L;
+                B{j} = L*sqrt(obj.concentrationLambda(j));
             end
             B = blkdiag(B{:});
             H = B'*B;
@@ -243,18 +243,18 @@ classdef Mixture
             end
         end
 
-        function p = get.peaks(obj)
-            Peaks = [obj.Components.Peak];
+        function p = get.concentrations(obj)
+            Concentrations = [obj.Components.Concentration];
             p = zeros(obj.Nx,obj.Nc);
             for j=1:obj.Nc
-                p(:,j) = Peaks(j).A*obj.uPeak{j};
+                p(:,j) = Concentrations(j).A*obj.uConcentration{j};
             end
         end
 
-        function n = get.peakNorm(obj)
+        function n = get.concentrationNorm(obj)
             n = zeros(1,obj.Nc);
             for j=1:obj.Nc
-                n(j) = obj.Components(j).Peak.norm(obj.uPeak{j});
+                n(j) = obj.Components(j).Concentration.norm(obj.uConcentration{j});
             end
         end
 
