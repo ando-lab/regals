@@ -13,18 +13,18 @@ class regals:
         self.I = I
         self.err = err
     
-    def fit_peaks(self, mix):
+    def fit_concentrations(self, mix):
         
         mix = deepcopy(mix)
         
-        H = mix.H_peak
-        [AA, Ab] = mix.peak_problem(self.I, self.err)
+        H = mix.H_concentration
+        [AA, Ab] = mix.concentration_problem(self.I, self.err)
         
         u = spsolve(AA + H, Ab)
         
-        u = np.split(u, np.cumsum(mix.k_peak)[:-1])
+        u = np.split(u, np.cumsum(mix.k_concentration)[:-1])
         
-        mix.u_peak = u
+        mix.u_concentration = u
         return mix
     
     def fit_profiles(self, mix):
@@ -46,15 +46,15 @@ class regals:
     
     def step(self, mix):
         
-        new_mix = self.fit_peaks(self.fit_profiles(mix));
+        new_mix = self.fit_concentrations(self.fit_profiles(mix));
         
         resid = (self.I - new_mix.I_reg) / self.err
         
         params = {}
         params['x2'] = np.mean(resid ** 2)
-        params['delta_peak'] = np.sum(np.abs(new_mix.peaks - mix.peaks),0)
+        params['delta_concentration'] = np.sum(np.abs(new_mix.concentrations - mix.concentrations),0)
         params['delta_profile'] = np.sum(np.abs(new_mix.profiles - mix.profiles),0)
-        params['delta_u_peak'] = np.array([np.sum(np.abs(nupk - upk)) for nupk, upk in zip(new_mix.u_peak, mix.u_peak)])
+        params['delta_u_concentration'] = np.array([np.sum(np.abs(nupk - upk)) for nupk, upk in zip(new_mix.u_concentration, mix.u_concentration)])
         params['delta_u_profile'] = np.array([np.sum(np.abs(nupr - upr)) for nupr, upr in zip(new_mix.u_profile, mix.u_profile)])
         
         return [new_mix, params, resid]
@@ -84,21 +84,21 @@ class regals:
 
 class mixture:
     
-    def __init__(self, components, lambda_peak = np.array([]), lambda_profile = np.array([]), u_peak = [], u_profile = []):
+    def __init__(self, components, lambda_concentration = np.array([]), lambda_profile = np.array([]), u_concentration = [], u_profile = []):
         self.components = components
-        self.lambda_peak = lambda_peak
+        self.lambda_concentration = lambda_concentration
         self.lambda_profile = lambda_profile
-        self.u_peak = u_peak
+        self.u_concentration = u_concentration
         self.u_profile = u_profile
         
-        if len(self.u_peak) == 0:
-            self.u_peak = [comp.peak.u0 for comp in components]
+        if len(self.u_concentration) == 0:
+            self.u_concentration = [comp.concentration.u0 for comp in components]
         
         if len(self.u_profile) == 0:
             self.u_profile = [comp.profile.u0 for comp in components]
         
-        if len(self.lambda_peak) == 0:
-            self.lambda_peak = np.zeros(self.Nc)
+        if len(self.lambda_concentration) == 0:
+            self.lambda_concentration = np.zeros(self.Nc)
         
         if len(self.lambda_profile) == 0:
             self.lambda_profile = np.zeros(self.Nc)
@@ -109,15 +109,15 @@ class mixture:
     
     @property
     def Nx(self):
-        return self.components[0].peak.Nx
+        return self.components[0].concentration.Nx
     
     @property
     def Nq(self):
         return self.components[0].profile.Nq
     
     @property
-    def k_peak(self):
-        return np.array([comp.peak.k for comp in self.components])
+    def k_concentration(self):
+        return np.array([comp.concentration.k for comp in self.components])
     
     @property
     def k_profile(self):
@@ -125,16 +125,16 @@ class mixture:
     
     @property
     def I_reg(self):
-        return self.profiles @ self.peaks.T
+        return self.profiles @ self.concentrations.T
     
-    def estimate_peak_lambda(self,err,ng):
-        AA = self.peak_problem(sp.csr_matrix(np.zeros((self.Nq,self.Nx))),err,False).todense()
+    def estimate_concentration_lambda(self,err,ng):
+        AA = self.concentration_problem(sp.csr_matrix(np.zeros((self.Nq,self.Nx))),err,False).todense()
         
-        split_pos = np.cumsum(self.k_peak)[:-1]
+        split_pos = np.cumsum(self.k_concentration)[:-1]
         AA = [np.hsplit(AAi, split_pos) for AAi in np.vsplit(AA, split_pos)]
         
         ll = np.zeros(self.Nc)
-        L = [comp.peak.L for comp in self.components]
+        L = [comp.concentration.L for comp in self.components]
         for k in range(self.Nc):
             d = np.real(eig(AA[k][k], (L[k].T @ L[k]).todense())[0])
             ll[k] = mixture.ng2lambda(d, ng[k])
@@ -155,11 +155,11 @@ class mixture:
         
         return ll
     
-    def peak_problem(self, I, err, calc_Ab = True):
+    def concentration_problem(self, I, err, calc_Ab = True):
         
         w = 1 / np.mean(err,1)
         
-        A = [comp.peak.A for comp in self.components]
+        A = [comp.concentration.A for comp in self.components]
         
         D = np.diag(w,0) @ I
         y = self.profiles
@@ -183,7 +183,7 @@ class mixture:
         A = [sp.csr_matrix(sp.diags(w,0) @ Ai) for Ai in A]
         
         D = np.diag(w,0) @ I
-        c = self.peaks
+        c = self.concentrations
         
         AA = [[(c[:,k1] @ c[:,k2]) * (A[k1].T @ A[k2]) for k2 in range(self.Nc)] for k1 in range(self.Nc)]
         AA = sp.vstack((sp.hstack(tuple(AAi)) for AAi in AA))
@@ -195,10 +195,10 @@ class mixture:
         else:
             return AA
         
-    def extract_peak(self,I,err,k):
+    def extract_concentration(self,I,err,k):
         
         notk = np.setdiff1d(np.arange(self.Nc), k)
-        c = self.peaks
+        c = self.concentrations
         y = self.profiles
         D = I - y[:,notk] @ c[:,notk].T
         yk = y[:,k]
@@ -212,7 +212,7 @@ class mixture:
     def extract_profile(self,I,err,k):
         
         notk = np.setdiff1d(np.arange(self.Nc), k)
-        c = self.peaks
+        c = self.concentrations
         y = self.profiles
         D = I - y[:,notk] @ c[:,notk].T
         ck = c[:,k]
@@ -223,9 +223,9 @@ class mixture:
         return [Ik, sigmak]
 
     @property
-    def H_peak(self):
-        L = [comp.peak.L for comp in self.components]
-        B = [Lpk * (lbdpk ** 0.5) for Lpk, lbdpk in zip(L, self.lambda_peak)]
+    def H_concentration(self):
+        L = [comp.concentration.L for comp in self.components]
+        B = [Lpk * (lbdpk ** 0.5) for Lpk, lbdpk in zip(L, self.lambda_concentration)]
         B = sp.block_diag(B)
         return B.T @ B
     
@@ -237,16 +237,16 @@ class mixture:
         return B.T @ B
     
     @property
-    def peaks(self):
-        return np.hstack(tuple(comp.peak.A @ upk[:,np.newaxis] for comp, upk in zip(self.components, self.u_peak)))
+    def concentrations(self):
+        return np.hstack(tuple(comp.concentration.A @ upk[:,np.newaxis] for comp, upk in zip(self.components, self.u_concentration)))
     
     @property
     def profiles(self):
         return np.hstack(tuple(comp.profile.A @ upr[:,np.newaxis] for comp, upr in zip(self.components, self.u_profile)))
         
     @property
-    def norm_peak(self):
-        return [comp.peak.norm(upk) for comp, upk in zip(self.components, self.u_peak)]
+    def norm_concentration(self):
+        return [comp.concentration.norm(upk) for comp, upk in zip(self.components, self.u_concentration)]
     
     @property
     def norm_profile(self):
@@ -278,32 +278,32 @@ class mixture:
 
 class component:
     
-    def __init__(self, peak, profile):
-        self.peak = peak
+    def __init__(self, concentration, profile):
+        self.concentration = concentration
         self.profile = profile
 
 
 
-class peak_class:
+class concentration_class:
     
-    def __init__(self, peak_type, *arg, **kwarg):
-        self.peak_type = peak_type
+    def __init__(self, concentration_type, *arg, **kwarg):
+        self.concentration_type = concentration_type
         
-        if self.peak_type == 'simple':
-            self._regularizer = peak_simple(*arg, **kwarg)
+        if self.concentration_type == 'simple':
+            self._regularizer = concentration_simple(*arg, **kwarg)
         
-        elif self.peak_type == 'smooth':
-            self._regularizer = peak_smooth(*arg, **kwarg)
+        elif self.concentration_type == 'smooth':
+            self._regularizer = concentration_smooth(*arg, **kwarg)
         
         else:
-            raise ValueError('unexpected peak type')
+            raise ValueError('unexpected concentration type')
     
     def __getattr__(self,attr):
         return super().__getattribute__('_regularizer').__getattribute__(attr) #super() usage for deepcopy
 
 
 
-class peak_simple:
+class concentration_simple:
     
     def __init__(self, x, xmin, xmax):
         self.x = x
@@ -320,10 +320,10 @@ class peak_simple:
     
     @property
     def F(self):
-        is_in_peak = np.isin(self.x,self.w)
+        is_in_concentration = np.isin(self.x,self.w)
         ind_in_w = np.nonzero(self.x[:,np.newaxis] == self.w)[1] #assumes no repetition in x
         v = np.arange(self.Nx)
-        return sp.csr_matrix((np.ones(self.Nw), (v[is_in_peak], ind_in_w)), shape=(self.Nx, self.Nw))
+        return sp.csr_matrix((np.ones(self.Nw), (v[is_in_concentration], ind_in_w)), shape=(self.Nx, self.Nw))
     
     @property
     def k(self):
@@ -354,7 +354,7 @@ class peak_simple:
 
 
 
-class peak_smooth:
+class concentration_smooth:
     
     def __init__(self, x, xmin, xmax, Nw = 50, is_zero_at_xmin = True, is_zero_at_xmax = True):
         #Changed input parameter order because python requires default parameters to follow non-default ones
@@ -377,11 +377,11 @@ class peak_smooth:
     def F(self):
         ix = np.searchsorted(self.w,self.x,side='right')
         ix = ix - 1
-        is_in_peak = np.logical_and(ix > -1, ix < self.Nw - 1)
+        is_in_concentration = np.logical_and(ix > -1, ix < self.Nw - 1)
         v = np.arange(self.Nx)
-        ix = ix[is_in_peak]
-        v = v[is_in_peak]
-        u = (self.x[is_in_peak] - self.w[ix]) * (1/self.dw)
+        ix = ix[is_in_concentration]
+        v = v[is_in_concentration]
+        u = (self.x[is_in_concentration] - self.w[ix]) * (1/self.dw)
         return sp.csr_matrix((np.concatenate((1-u,u)), (np.concatenate((v,v)), np.concatenate((ix,ix+1)))),shape = (self.Nx, self.Nw))
     
     @property

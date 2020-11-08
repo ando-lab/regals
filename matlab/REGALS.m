@@ -19,21 +19,21 @@ classdef REGALS
             end
         end
 
-        function Mix = fitPeaks(obj,Mix)
-            %FITPEAKS
+        function Mix = fitConcentrations(obj,Mix)
+            %FITCONCENTRATIONS
 
             % calculate matrices
-            H = Mix.peakH;
-            [AA,Ab] = Mix.peakProblem(obj.I,obj.err);
+            H = Mix.concentrationH;
+            [AA,Ab] = Mix.concentrationProblem(obj.I,obj.err);
 
             % least-squares fit
             u = (AA + H)\Ab;
 
             % repartition u
-            u = mat2cell(u,Mix.kPeak,1);
+            u = mat2cell(u,Mix.kConcentration,1);
 
             % assign to output
-            Mix.uPeak = u;
+            Mix.uConcentration = u;
         end
 
         function Mix = fitProfiles(obj,Mix)
@@ -62,27 +62,27 @@ classdef REGALS
         function [NewMix,params,resid] = step(obj,Mix)
             % step - take a REGALS step
 
-            % fit profiles then peaks
-            NewMix = obj.fitPeaks(obj.fitProfiles(Mix));
+            % fit profiles then concentrations
+            NewMix = obj.fitConcentrations(obj.fitProfiles(Mix));
 
             % calculate goodness of fit
             resid = (obj.I - NewMix.Ireg)./obj.err;
             x2 = mean(resid(:).^2);
 
             % calculate deltas
-            delta_peak = sum(abs(NewMix.peaks - Mix.peaks),1);
+            delta_concentration = sum(abs(NewMix.concentrations - Mix.concentrations),1);
             delta_profile = sum(abs(NewMix.profiles - Mix.profiles),1);
-            delta_uPeak = cellfun(@(v1,v2) sum(abs(v1-v2)),...
-                            NewMix.uPeak,Mix.uPeak);
+            delta_uConcentration = cellfun(@(v1,v2) sum(abs(v1-v2)),...
+                            NewMix.uConcentration,Mix.uConcentration);
             delta_uProfile = cellfun(@(v1,v2) sum(abs(v1-v2)),...
                             NewMix.uProfile,Mix.uProfile);
 
             % return various parameters
             params = struct(...
                 'x2',x2,...
-                'delta_peak',delta_peak,...
+                'delta_concentration',delta_concentration,...
                 'delta_profile',delta_profile,...
-                'delta_uPeak',delta_uPeak',... % <- transpose to row vector
+                'delta_uConcentration',delta_uConcentration',... % <- transpose to row vector
                 'delta_uProfile',delta_uProfile');
         end
 

@@ -1,5 +1,5 @@
-classdef Peak
-    %PEAK describes a 1D function in the x direction
+classdef Concentration
+    %CONCENTRATION describes a 1D function in the x direction
     properties
         regularizer
     end
@@ -14,15 +14,15 @@ classdef Peak
     end
     
     methods
-        function obj = Peak(x,type,varargin)
+        function obj = Concentration(x,type,varargin)
             if nargin > 1
                 switch lower(type)
                     case {'','simple'}
-                        obj.regularizer = PeakSimple('x',x,varargin{:});
+                        obj.regularizer = ConcentrationSimple('x',x,varargin{:});
                     case 'smooth'
-                        obj.regularizer = PeakSmooth('x',x,varargin{:});
+                        obj.regularizer = ConcentrationSmooth('x',x,varargin{:});
                     otherwise
-                        error('unknown peak regularizer');
+                        error('unknown concentration regularizer');
                 end
             end
         end

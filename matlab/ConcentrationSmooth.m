@@ -1,4 +1,4 @@
-classdef PeakSmooth < PeakClass
+classdef ConcentrationSmooth < ConcentrationClass
     properties
 
         % INTERFACE REQUIRED BY SUPERCLASS (Nw)
@@ -18,7 +18,7 @@ classdef PeakSmooth < PeakClass
     properties(Dependent = true)
         % INTERFACE REQUIRED BY SUPERCLASS (F,w,k,l,A)
         F  % linear interpolation operator: C(x) = I*wx
-        w  % vector of points sampling the peak
+        w  % vector of points sampling the concentration
         k  % number of coefficients of w which are free
         L  % second derivative operator: W''(x) = Lx*W(x) [here, W(x) is of length k]
         A  % truncated and error-weighted interpolation matrix (Nx by k)
@@ -30,7 +30,7 @@ classdef PeakSmooth < PeakClass
         dw % spacing between samples in w vector
     end
     methods
-        function obj = PeakSmooth(varargin)
+        function obj = ConcentrationSmooth(varargin)
             if ~isempty(varargin)
                 for j=1:2:length(varargin)
                     obj.(varargin{j}) = varargin{j+1};
@@ -38,16 +38,16 @@ classdef PeakSmooth < PeakClass
             end
         end
 
-        % PEAK PROFILE-RELATED GET METHODS (see Humpty.m)
+        % CONCENTRATION PROFILE-RELATED GET METHODS (see Humpty.m)
         function val = get.F(obj)
             thisx = obj.x(:);
             [~,ix] = histc(thisx,[-Inf;obj.w;Inf]);
             ix = ix-1;
-            isInPeak = ix > 0 & ix < obj.Nw;
+            isInConcentration = ix > 0 & ix < obj.Nw;
             v = (1:obj.Nx)';
-            ix = ix(isInPeak);
-            v = v(isInPeak);
-            u = (thisx(isInPeak) - obj.w(ix))*(1/obj.dw);
+            ix = ix(isInConcentration);
+            v = v(isInConcentration);
+            u = (thisx(isInConcentration) - obj.w(ix))*(1/obj.dw);
             val = sparse([v;v],[ix;ix+1],[1-u;u],obj.Nx,obj.Nw);
         end
         function val = get.k(obj)

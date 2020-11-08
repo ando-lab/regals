@@ -1,4 +1,4 @@
-classdef (Abstract) PeakClass
+classdef (Abstract) ConcentrationClass
     properties
         x
     end
