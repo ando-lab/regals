@@ -180,12 +180,12 @@ class mixture:
         w = 1 / np.mean(err,1)
         
         A = [comp.profile.A for comp in self.components]
-        A = [sp.csr_matrix(sp.diags(w,0) @ Ai) for Ai in A]
+        A = [np.diag(w,0) @ Ai for Ai in A]
         
         D = np.diag(w,0) @ I
         c = self.concentrations
         
-        AA = [[(c[:,k1] @ c[:,k2]) * (A[k1].T @ A[k2]) for k2 in range(self.Nc)] for k1 in range(self.Nc)]
+        AA = [[sp.csr_matrix((c[:,k1] @ c[:,k2]) * (A[k1].T @ A[k2])) for k2 in range(self.Nc)] for k1 in range(self.Nc)]
         AA = sp.vstack((sp.hstack(tuple(AAi)) for AAi in AA))
         
         if calc_Ab == True:
