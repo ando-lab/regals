@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 129.69 89.12" style="enable-background:new 0 0 129.69 89.12;" xml:space="preserve">
+<style type="text/css">
+	.st0{clip-path:url(#SVGID_2_);fill:#FFFFFF;stroke:#000000;stroke-miterlimit:10;}
+	.st1{clip-path:url(#SVGID_2_);}
+	.st2{fill:#FFD443;stroke:#000000;stroke-miterlimit:10;}
+	.st3{fill:#FFFFFF;stroke:#000000;stroke-miterlimit:10;}
+	.st4{fill:#FFFFFF;stroke:#FFFFFF;stroke-miterlimit:10;}
+	.st5{fill:none;stroke:#000000;stroke-miterlimit:10;}
+	.st6{font-family:'GillSans';}
+	.st7{font-size:14px;}
+</style>
+<g>
+	<defs>
+		<path id="SVGID_1_" d="M6.54,76.34c10.17,2.75,22.51,1.83,33.11-0.39s20.21-5.65,30.72-8c15.62-3.49,33.1-4.5,49.73-2.87V1.11
+			H6.54V76.34z"/>
+	</defs>
+	<clipPath id="SVGID_2_">
+		<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
+	</clipPath>
+	<path class="st0" d="M61.79,78.03"/>
+	<g class="st1">
+		<polyline class="st2" points="96.24,78.03 61.79,19.76 27.33,78.03 		"/>
+		<polygon class="st2" points="96.24,26.76 74.59,52.39 52.94,78.03 96.24,78.03 		"/>
+		<polygon class="st2" points="27.33,78.03 70.63,78.03 48.98,52.39 27.33,26.76 		"/>
+		<circle class="st2" cx="61.79" cy="13.48" r="2.73"/>
+		<circle class="st2" cx="97.87" cy="21.67" r="2.73"/>
+		<circle class="st2" cx="27.33" cy="21.67" r="2.73"/>
+	</g>
+</g>
+<path class="st3" d="M61.79,78.03"/>
+<path class="st4" d="M6.54,86.04H120.1V65.08c-16.63-1.63-34.11-0.62-49.73,2.87c-10.51,2.35-20.12,5.77-30.72,8
+	s-22.94,3.14-33.11,0.39"/>
+<path class="st5" d="M6.54,76.34c10.17,2.75,22.51,1.83,33.11-0.39s20.21-5.65,30.72-8c15.62-3.49,33.1-4.5,49.73-2.87"/>
+<text transform="matrix(1 0 0 1 68.5304 80.982)" class="st6 st7">REGALS</text>
+</svg>
