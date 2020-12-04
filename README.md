@@ -1,6 +1,8 @@
-# <img alt="REGALS" src="regals-logo.svg" width="350">
+# `REGALS`
 
-__REGALS__ (for __REG__ularized __A__lternating __L__east __S__quares) is a software package for deconvolution of small angle X-ray scattering (SAXS) datasets. It is particularly useful for processing datasets from chromatography-coupled SAXS, time-resolved SAXS, and equilibrium titrations. See our paper [1] for details.
+<img align="right" alt="REGALS logo" src="regals-logo.svg" width="200">
+
+Software package for small angle X-ray scattering (SAXS) mixture deconvolution by REGularized Alternating Least Squares. It has been applied to datasets from chromatography-coupled SAXS, time-resolved SAXS, and equilibrium titrations. See our paper ([1]) for details.
 
 ## Repository Contents
 
@@ -47,4 +49,5 @@ For a full description of the REGALS method refer to our paper [1] and the inclu
 
 ## References
 
-[1]: Meisburger, S.P., Xu, D. & Ando, N. REGALS method to deconvolve X-ray scattering data from evolving mixtures. BioRxiv (2020). https://doi.org/???/
+[1]: https://doi.org/???/
+(1) Meisburger, S.P., Xu, D. & Ando, N. REGALS method to deconvolve X-ray scattering data from evolving mixtures. BioRxiv (2020). https://doi.org/???/
