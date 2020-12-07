@@ -49,5 +49,5 @@ For a full description of the REGALS method refer to our paper ([Meisburger, Xu,
 
 ## References
 
-[Meisburger, Xu, & Ando, 2020]: https://doi.org/10.1101/2020.12.06.413997
-Meisburger, S.P., Xu, D. & Ando, N. REGALS method to deconvolve X-ray scattering data from evolving mixtures. _BioRxiv_ (2020). https://doi.org/10.1101/2020.12.06.413997
+[Meisburger, Xu, & Ando, 2020]: https://www.biorxiv.org/content/10.1101/2020.12.06.413997v1
+Meisburger, S.P., Xu, D. & Ando, N. REGALS method to deconvolve X-ray scattering data from evolving mixtures. _BioRxiv_ (2020). https://www.biorxiv.org/content/10.1101/2020.12.06.413997v1
