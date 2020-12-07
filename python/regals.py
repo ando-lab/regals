@@ -128,7 +128,7 @@ class mixture:
         return self.profiles @ self.concentrations.T
     
     def estimate_concentration_lambda(self,err,ng):
-        AA = self.concentration_problem(sp.csr_matrix(np.zeros((self.Nq,self.Nx))),err,False).todense()
+        AA = self.concentration_problem(np.zeros((self.Nq,self.Nx)),err,False).todense()
         
         split_pos = np.cumsum(self.k_concentration)[:-1]
         AA = [np.hsplit(AAi, split_pos) for AAi in np.vsplit(AA, split_pos)]
@@ -142,7 +142,7 @@ class mixture:
         return ll
     
     def estimate_profile_lambda(self,err,ng):
-        AA = self.profile_problem(sp.csr_matrix(np.zeros((self.Nq,self.Nx))),err,False).todense()
+        AA = self.profile_problem(np.zeros((self.Nq,self.Nx)),err,False).todense()
         
         split_pos = np.cumsum(self.k_profile)[:-1]
         AA = [np.hsplit(AAi, split_pos) for AAi in np.vsplit(AA, split_pos)]
@@ -161,9 +161,9 @@ class mixture:
         
         A = [comp.concentration.A for comp in self.components]
         
-        D = np.diag(w,0) @ I
+        D = w[:,np.newaxis] * I
         y = self.profiles
-        y = np.diag(w,0) @ y
+        y = w[:,np.newaxis] * y
         
         AA = [[(y[:,k1] @ y[:,k2]) * (A[k1].T @ A[k2]) for k2 in range(self.Nc)] for k1 in range(self.Nc)]
         AA = sp.vstack((sp.hstack(tuple(AAi)) for AAi in AA))
@@ -180,12 +180,12 @@ class mixture:
         w = 1 / np.mean(err,1)
         
         A = [comp.profile.A for comp in self.components]
-        A = [sp.csr_matrix(sp.diags(w,0) @ Ai) for Ai in A]
+        A = [sp.diags(w,0) @ Ai for Ai in A]
         
-        D = np.diag(w,0) @ I
+        D = w[:,np.newaxis] * I
         c = self.concentrations
         
-        AA = [[(c[:,k1] @ c[:,k2]) * (A[k1].T @ A[k2]) for k2 in range(self.Nc)] for k1 in range(self.Nc)]
+        AA = [[sp.csr_matrix((c[:,k1] @ c[:,k2]) * (A[k1].T @ A[k2])) for k2 in range(self.Nc)] for k1 in range(self.Nc)]
         AA = sp.vstack((sp.hstack(tuple(AAi)) for AAi in AA))
         
         if calc_Ab == True:
