@@ -35,7 +35,7 @@ Meisburger, S. P. _et al._ (2016) Domain Movements upon Activation of Phenylalan
 
 ## 3. Time-resolved mixing
 
-**Experiment:** Stopped-flow mixing of nucleotide binding domain (NBD) from membrane transporter MsbA with ATP (from [Josts et al. 2020]).
+**Experiment:** Stopped-flow mixing of ATP with nucleotide binding domain (NBD) from membrane transporter MsbA (from [Josts et al. 2020]).
 
 **Preprocessing:** Downloaded scattering curves from the SASBDB (ID: [SASDGV5](https://www.sasbdb.org/data/SASDGV5/)) and reformatted.
 
@@ -61,7 +61,7 @@ Josts, I. _et al._ (2020). Structural Kinetics of MsbA Investigated by Stopped-F
 - `CypA_Tjump.ipynb` - jupyter notebook
 - `CypA_Tjump.mlx` - MATLAB live notebook
 
-_**If you use this data please cite the Figshare entry the original publication:**_
+_**If you use this data please cite the Figshare entry and the original publication:**_
 
 > [Thompson et al. 2019]: https://doi.org/10.1038/s41557-019-0329-3
 Thompson, M. C. _et al._ (2019). Temperature-Jump Solution X-Ray Scattering Reveals Distinct Motions in a Dynamic Enzyme. *Nature Chemistry* 11, 1058–1066. https://doi.org/10.1038/s41557-019-0329-3
