@@ -63,10 +63,10 @@ class regals:
 
     def run(self, mix, stop_fun = None, update_fun = None):
 
-        if stop_fun == None:
+        if stop_fun is None:
             stop_fun = lambda num_iter, params: [num_iter >= 10, 'max_iter']
 
-        if update_fun == None:
+        if update_fun is None:
             update_fun = lambda num_iter, new_mix, params, resid: True
 
         num_iter = 0
