@@ -7,8 +7,6 @@ from scipy import sparse as sp
 from scipy.linalg import eig
 from scipy.sparse.linalg import spsolve
 
-print('modified')
-
 class regals:
 
     def __init__(self, I, err):
