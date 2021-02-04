@@ -346,6 +346,8 @@ class concentration_simple:
 
     def _calc_params(self):
         self.Nx = len(self.x)
+        self.w = self.x[np.logical_and(self.x >= self.xmin, self.x <= self.xmax)] #assumes no repetition in x
+        self.Nw = len(self.w)
 
         # Calculate F
         is_in_concentration = np.isin(self.x,self.w)
@@ -353,8 +355,8 @@ class concentration_simple:
         v = np.arange(self.Nx)
         self.F = sp.csr_matrix((np.ones(self.Nw), (v[is_in_concentration], ind_in_w)), shape=(self.Nx, self.Nw))
 
-        self.w = self.x[np.logical_and(self.x >= self.xmin, self.x <= self.xmax)] #assumes no repetition in x
-        self.Nw = len(self.w)
+
+
         self.k = self.Nw
         self.u0 = np.ones(self.k)
         self.L = sp.eye(self.Nw)
