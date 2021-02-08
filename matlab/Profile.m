@@ -1,16 +1,17 @@
 classdef Profile
     %PROFILE describes a 1D function in the q direction
-    properties
+    properties(SetAccess = immutable, GetAccess = private)
         regularizer
     end
     
-    properties(Dependent = true)
-        A    % wrapper function for obj.regularizer.A;
-        L    % wrapper function for obj.regularizer.L;
-        k    % wrapper function for obj.regularizer.k;
-        u0   % wrapper function for obj.regularizer.u0;
-        y0   % wrapper function for obj.regularizer.y0;
-        Nq   % wrapper function for obj.regularizer.Nq;
+    properties(SetAccess = private)
+        A    % cache value of obj.regularizer.A;
+        L    % cache value of obj.regularizer.L;
+        k    % cache value of obj.regularizer.k;
+        u0   % cache value of obj.regularizer.u0;
+        y0   % cache value of obj.regularizer.y0;
+        Nq   % cache value of obj.regularizer.Nq;
+        w    % cache value of obj.regularizer.w;
     end
     
     methods
@@ -27,26 +28,16 @@ classdef Profile
                         error('unknown profile regularizer');
                 end
             end
+            
+            obj.A = obj.regularizer.A;
+            obj.L = obj.regularizer.L;
+            obj.k = obj.regularizer.k;
+            obj.u0 = obj.regularizer.u0;
+            obj.y0 = obj.regularizer.y0;
+            obj.Nq = obj.regularizer.Nq;
+            obj.w = obj.regularizer.w;
         end
-        
-        function val = get.A(obj)
-            val = obj.regularizer.A;
-        end
-        function val = get.L(obj)
-            val = obj.regularizer.L;
-        end
-        function val = get.k(obj)
-            val = obj.regularizer.k;
-        end
-        function val = get.u0(obj)
-            val = obj.regularizer.u0;
-        end
-        function val = get.y0(obj)
-            val = obj.regularizer.y0;
-        end
-        function val = get.Nq(obj)
-            val = obj.regularizer.Nq;
-        end
+
         function val = norm(obj,u)
             val = obj.regularizer.norm(u);
         end

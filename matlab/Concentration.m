@@ -1,16 +1,17 @@
 classdef Concentration
     %CONCENTRATION describes a 1D function in the x direction
-    properties
+    properties(SetAccess = immutable, GetAccess = private)
         regularizer
     end
     
-    properties(Dependent = true)
-        A    % wrapper function for obj.regularizer.A;
-        L    % wrapper function for obj.regularizer.L;
-        k    % wrapper function for obj.regularizer.k;
-        u0   % wrapper function for obj.regularizer.u0;
-        y0   % wrapper function for obj.regularizer.y0;
-        Nx 
+    properties(SetAccess = private)
+        A    % cache obj.regularizer.A;
+        L    % cache obj.regularizer.L;
+        k    % cache obj.regularizer.k;
+        u0   % cache obj.regularizer.u0;
+        y0   % cache obj.regularizer.y0;
+        Nx   % cache obj.regularizer.Nx;
+        w    % cache obj.regularizer.w;
     end
     
     methods
@@ -25,6 +26,15 @@ classdef Concentration
                         error('unknown concentration regularizer');
                 end
             end
+            
+            obj.A = obj.regularizer.A;
+            obj.L = obj.regularizer.L;
+            obj.k = obj.regularizer.k;
+            obj.u0 = obj.regularizer.u0;
+            obj.y0 = obj.regularizer.y0;
+            obj.Nx = obj.regularizer.Nx;
+            obj.w = obj.regularizer.w;
+            
         end
         
         function val = get.A(obj)

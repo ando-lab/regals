@@ -297,9 +297,21 @@ class concentration_class:
         
         else:
             raise ValueError('unexpected concentration type')
+        
+        # cache values of dependent properties for faster access
+        self.A = self._regularizer.A;
+        self.L = self._regularizer.L;
+        self.k = self._regularizer.k;
+        self.u0 = self._regularizer.u0;
+        self.y0 = self._regularizer.y0;
+        self.Nx = self._regularizer.Nx;
+        self.w = self._regularizer.w;
     
-    def __getattr__(self,attr):
-        return super().__getattribute__('_regularizer').__getattribute__(attr) #super() usage for deepcopy
+    def norm(self,u):
+        return self._regularizer.norm(u)
+    
+    #def __getattr__(self,attr):
+    #    return super().__getattribute__('_regularizer').__getattribute__(attr) #super() usage for deepcopy
 
 
 
@@ -451,9 +463,21 @@ class profile_class:
         
         else:
             raise ValueError('unexpected profile type')
-    
-    def __getattr__(self,attr):
-        return super().__getattribute__('_regularizer').__getattribute__(attr) #super() usage for deepcopy
+        
+        # cache values of dependent properties for faster access
+        self.A = self._regularizer.A;
+        self.L = self._regularizer.L;
+        self.k = self._regularizer.k;
+        self.u0 = self._regularizer.u0;
+        self.y0 = self._regularizer.y0;
+        self.Nq = self._regularizer.Nq;
+        self.w = self._regularizer.w;
+        
+    def norm(self,u):
+        return self._regularizer.norm(u)
+        
+    #def __getattr__(self,attr):
+    #    return super().__getattribute__('_regularizer').__getattribute__(attr) #super() usage for deepcopy
 
 
 
