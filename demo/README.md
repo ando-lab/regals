@@ -1,11 +1,12 @@
 # Demonstrations
 
-REGALS can be applied to SAXS datasets from a variety of experimental setups. Demos 1-4 included here reproduce the analysis in the REGALS paper ([Meisburger, Xu & Ando, 2020]). Each demo is contained in a live notebook and requires an input data file provided in the `data` folder. Both MATLAB and python versions are included. See below for a list of files and reference information for each dataset.
+REGALS can be applied to SAXS datasets from a variety of experimental setups. Demos 1-4 included here reproduce the analysis in the REGALS paper ([Meisburger, Xu & Ando, 2021]). Each demo is contained in a live notebook and requires an input data file provided in the `data` folder. Both MATLAB and python versions are included. See below for a list of files and reference information for each dataset.
 
 The easiest way to run the demos is to clone (or download) the REGALS repository and run the live notebooks in place. The jupyter notebooks can also be viewed directly within GitHub.
 
-> [Meisburger, Xu & Ando, 2020]: https://www.biorxiv.org/content/10.1101/2020.12.06.413997v1
-Meisburger, S. P., Xu, D. & Ando, N. (2020). REGALS: a general method to deconvolve X-ray scattering data from evolving mixtures. _BioRxiv_. https://www.biorxiv.org/content/10.1101/2020.12.06.413997v1
+> [Meisburger, Xu, & Ando, 2021]: https://doi.org/10.1107/S2052252521000555
+Meisburger, S.P., Xu, D. & Ando, N. (2021). _REGALS_: a general method to deconvolve X-ray scattering data from evolving mixtures. _IUCrJ_ **8**(2). https://doi.org/10.1107/S2052252521000555
+
 
 ## 1. AEX-SAXS
 
@@ -31,7 +32,7 @@ Parker, M. J. _et al._ (2018). An endogenous dAMP ligand in Bacillus subtilis cl
 
 _**Data is included here with permission from the authors. If you use it please cite the original publication:**_
 > [Meisburger et al. 2016]: https://doi.org/10.1021/jacs.6b01563
-Meisburger, S. P. _et al._ (2016) Domain Movements upon Activation of Phenylalanine Hydroxylase Characterized by Crystallography and Chromatography-Coupled Small-Angle X-ray Scattering. *J Am Chem Soc* 138, 6506–6516. https://doi.org/10.1021/jacs.6b01563
+Meisburger, S. P. _et al._ (2016). Domain Movements upon Activation of Phenylalanine Hydroxylase Characterized by Crystallography and Chromatography-Coupled Small-Angle X-ray Scattering. *J Am Chem Soc* 138, 6506–6516. https://doi.org/10.1021/jacs.6b01563
 
 ## 3. Time-resolved mixing
 
@@ -54,7 +55,7 @@ Josts, I. _et al._ (2020). Structural Kinetics of MsbA Investigated by Stopped-F
 **Experiment:** SAXS/WAXS measurement following rapid temperature jump (IR laser pulse) to 29.9 degC (from [Thompson et al. 2019]).
 
 **Preprocessing:** downloaded raw data from the NIH Figshare Archive
- ([Fraser, Anfinrud & Thompson, 2019]), calculated difference profiles (laser on - laser off), scaled in WAXS regime, subtracted buffer blanks, and truncated to _q_ < 1 A<sup>-1</sup> (see [Thompson et al. 2019] and [Meisburger, Xu & Ando, 2020] for details).
+ ([Fraser, Anfinrud & Thompson, 2019]), calculated difference profiles (laser on - laser off), scaled in WAXS regime, subtracted buffer blanks, and truncated to _q_ < 1 A<sup>-1</sup> (see [Thompson et al. 2019] and [Meisburger, Xu & Ando, 2021] for details).
 
 **Files:**
 - `data/CypA_Tjump.mat` - preprocessed input data (MATLAB-formatted hdf5)

@@ -2,7 +2,7 @@
 
 <img align="right" alt="REGALS logo" src="regals-logo.svg" width="200">
 
-Software package for small angle X-ray scattering (SAXS) mixture deconvolution by REGularized Alternating Least Squares. It has been applied to datasets from chromatography-coupled SAXS, time-resolved SAXS, and equilibrium titrations. See our paper ([Meisburger, Xu, & Ando, 2020]) for details.
+Software package for small angle X-ray scattering (SAXS) mixture deconvolution by REGularized Alternating Least Squares. It has been applied to datasets from chromatography-coupled SAXS, time-resolved SAXS, and equilibrium titrations. See our paper ([Meisburger, Xu, & Ando, 2021]) for details.
 
 ## Repository Contents
 
@@ -45,9 +45,9 @@ To get started using REGALS:
 
 **Python**: Create a python 3 environment with the necessary libraries. Copy an appropriate example script from `demo/`, and open it using jupyter. Make sure the `python/` directory has been added to the path. Edit the script as needed for your dataset.
 
-For a full description of the REGALS method refer to our paper ([Meisburger, Xu, & Ando, 2020]) and the included demos.
+For a full description of the REGALS method refer to our paper ([Meisburger, Xu, & Ando, 2021]) and the included demos.
 
 ## References
 
-[Meisburger, Xu, & Ando, 2020]: https://www.biorxiv.org/content/10.1101/2020.12.06.413997v1
-Meisburger, S.P., Xu, D. & Ando, N. REGALS: a general method to deconvolve X-ray scattering data from evolving mixtures. _BioRxiv_ (2020). https://www.biorxiv.org/content/10.1101/2020.12.06.413997v1
+[Meisburger, Xu, & Ando, 2021]: https://doi.org/10.1107/S2052252521000555
+Meisburger, S.P., Xu, D. & Ando, N. (2021) _REGALS_: a general method to deconvolve X-ray scattering data from evolving mixtures. _IUCrJ_ **8**(2). https://doi.org/10.1107/S2052252521000555
