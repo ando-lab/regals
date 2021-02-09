@@ -284,37 +284,6 @@ class component:
 
 
 
-class concentration_class:
-
-    def __init__(self, concentration_type, *arg, **kwarg):
-        self.concentration_type = concentration_type
-
-        if self.concentration_type == 'simple':
-            self._regularizer = concentration_simple(*arg, **kwarg)
-
-        elif self.concentration_type == 'smooth':
-            self._regularizer = concentration_smooth(*arg, **kwarg)
-
-        else:
-            raise ValueError('unexpected concentration type')
-
-        # cache values of dependent properties for faster access
-        self.A = self._regularizer.A;
-        self.L = self._regularizer.L;
-        self.k = self._regularizer.k;
-        self.u0 = self._regularizer.u0;
-        self.y0 = self._regularizer.y0;
-        self.Nx = self._regularizer.Nx;
-        self.w = self._regularizer.w;
-
-    def norm(self,u):
-        return self._regularizer.norm(u)
-
-    #def __getattr__(self,attr):
-    #    return super().__getattribute__('_regularizer').__getattribute__(attr) #super() usage for deepcopy
-
-
-
 class concentration_simple:
 
     def __init__(self, x, xmin, xmax):
@@ -447,22 +416,20 @@ class concentration_smooth:
 
 
 
-class profile_class:
+class concentration_class:
 
-    def __init__(self, profile_type, *arg, **kwarg):
-        self.profile_type = profile_type
+    _regularizer_classes = {
+        'simple'    : concentration_simple,
+        'smooth'    : concentration_smooth,
+        }
 
-        if self.profile_type == 'simple':
-            self._regularizer = profile_simple(*arg, **kwarg)
+    def __init__(self, reg_type, *arg, **kwarg):
+        self.reg_type = reg_type
 
-        elif self.profile_type == 'smooth':
-            self._regularizer = profile_smooth(*arg, **kwarg)
-
-        elif self.profile_type == 'realspace':
-            self._regularizer = profile_real_space(*arg, **kwarg)
-
+        if reg_type in self._regularizer_classes:
+            self._regularizer = self._regularizer_classes[reg_type](*arg, **kwarg)
         else:
-            raise ValueError('unexpected profile type')
+            raise ValueError('unexpected concentration type')
 
         # cache values of dependent properties for faster access
         self.A = self._regularizer.A;
@@ -470,7 +437,7 @@ class profile_class:
         self.k = self._regularizer.k;
         self.u0 = self._regularizer.u0;
         self.y0 = self._regularizer.y0;
-        self.Nq = self._regularizer.Nq;
+        self.Nx = self._regularizer.Nx;
         self.w = self._regularizer.w;
 
     def norm(self,u):
@@ -663,3 +630,35 @@ class profile_real_space:
         if self.is_zero_at_r0:
             weight = weight[1:]
         return np.sum(weight * u)
+
+
+class profile_class:
+
+    _regularizer_classes = {
+        'simple'    : profile_simple,
+        'smooth'    : profile_smooth,
+        'realspace' : profile_real_space,
+        }
+
+    def __init__(self, reg_type, *arg, **kwarg):
+        self.reg_type = reg_type
+
+        if reg_type in self._regularizer_classes:
+            self._regularizer = self._regularizer_classes[reg_type](*arg, **kwarg)
+        else:
+            raise ValueError('unexpected profile type')
+
+        # cache values of dependent properties for faster access
+        self.A = self._regularizer.A;
+        self.L = self._regularizer.L;
+        self.k = self._regularizer.k;
+        self.u0 = self._regularizer.u0;
+        self.y0 = self._regularizer.y0;
+        self.Nq = self._regularizer.Nq;
+        self.w = self._regularizer.w;
+
+    def norm(self,u):
+        return self._regularizer.norm(u)
+
+    #def __getattr__(self,attr):
+    #    return super().__getattribute__('_regularizer').__getattribute__(attr) #super() usage for deepcopy
