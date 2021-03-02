@@ -41,8 +41,9 @@ classdef ConcentrationSmooth < ConcentrationClass
         % CONCENTRATION PROFILE-RELATED GET METHODS (see Humpty.m)
         function val = get.F(obj)
             thisx = obj.x(:);
-            [~,ix] = histc(thisx,[-Inf;obj.w;Inf]);
+            [~,ix] = histc(thisx,[-Inf;obj.w]);
             ix = ix-1;
+            ix(ix==obj.Nw) = obj.Nw - 1; % if equal to last bin edge, assign to last bin
             isInConcentration = ix > 0 & ix < obj.Nw;
             v = (1:obj.Nx)';
             ix = ix(isInConcentration);
