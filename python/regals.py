@@ -388,9 +388,10 @@ class concentration_smooth:
     @property
     def F(self):
         ix = np.searchsorted(self.w,self.x,side='right')
+        ix_l = np.searchsorted(self.w,self.x,side='left')
+        is_in_concentration = np.logical_or(np.logical_and(ix > 0, ix < self.Nw),ix != ix_l)
         ix = ix - 1
         ix[ix == self.Nw - 1] = self.Nw - 2 # if equal to last bin edge, assign to last bin
-        is_in_concentration = np.logical_and(ix > -1, ix < self.Nw - 1)
         v = np.arange(self.Nx)
         ix = ix[is_in_concentration]
         v = v[is_in_concentration]
