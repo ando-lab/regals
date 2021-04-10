@@ -97,8 +97,8 @@ classdef Mixture
             ll = zeros(1,obj.Nc);
             for k=1:obj.Nc
                 Lk = obj.Components(k).Concentration.L;
-                [~,d] = eig(full(AA{k,k}),full(Lk'*Lk));
-                ll(k) = ng2lambda(diag(d),ng(k));
+                [~,d] = eig(full(AA{k,k}),full(Lk'*Lk),'qz','vector');
+                ll(k) = ng2lambda(d,ng(k));
             end
         end
 
@@ -274,6 +274,7 @@ function lambda = ng2lambda(dd,ng)
 ng0 = nnz(isinf(dd)); % minimum number of free parameters
 
 dd = dd(dd>=0 & ~isinf(dd)); % remove negative and infinite values
+dd = dd(~isinf(log10(dd))); % fix numberical bug: removes values very close to zero
 
 lambdaList = logspace(max(log10(dd)) + 2,min(log10(dd)) - 2,51);
 
