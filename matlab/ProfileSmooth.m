@@ -18,6 +18,8 @@ classdef ProfileSmooth < ProfileClass
 
         % DEFINED BY SUPERCLASS
         % Nq  % = length(q)
+        
+        maxinfo
     end
     properties(Dependent = true, Access = private)
         dw % spacing between samples in w vector
@@ -80,6 +82,13 @@ classdef ProfileSmooth < ProfileClass
         end
         function val = norm(~,u)
             val = sqrt(mean(u(:).*u(:)));
+        end
+        
+        function val = get.maxinfo(obj)
+            % estimate the maximum number of good parameters that can be
+            % extracted from the data using this parameterization.
+            
+            val = min([obj.k,obj.Nq]); % whichever is less: number of data points, or number of free parameters
         end
 
     end

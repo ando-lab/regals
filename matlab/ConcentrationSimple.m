@@ -20,6 +20,8 @@ classdef ConcentrationSimple < ConcentrationClass
 
         % DEFINED BY SUPERCLASS:
         % Nx % = length(x)
+        
+        maxinfo
     end
     methods
         function obj = ConcentrationSimple(varargin)
@@ -56,6 +58,12 @@ classdef ConcentrationSimple < ConcentrationClass
         end
         function val = get.A(obj)
             val = obj.F;
+        end
+        function val = get.maxinfo(obj)
+            % estimate the maximum number of good parameters that can be
+            % extracted from the data using this parameterization.
+            
+            val = obj.Nw; % number of data points between xmin, xmax
         end
 
     end
