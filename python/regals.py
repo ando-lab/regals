@@ -289,7 +289,7 @@ class component:
 class concentration_class:
     
     def __init__(self, concentration_type, *arg, **kwarg):
-        self.concentration_type = concentration_type
+        self.concentration_type = concentration_type.lower()
         
         if self.concentration_type == 'simple':
             self._regularizer = concentration_simple(*arg, **kwarg)
@@ -301,13 +301,14 @@ class concentration_class:
             raise ValueError('unexpected concentration type')
         
         # cache values of dependent properties for faster access
-        self.A = self._regularizer.A;
-        self.L = self._regularizer.L;
-        self.k = self._regularizer.k;
-        self.u0 = self._regularizer.u0;
-        self.y0 = self._regularizer.y0;
-        self.Nx = self._regularizer.Nx;
-        self.w = self._regularizer.w;
+        self.A = self._regularizer.A
+        self.L = self._regularizer.L
+        self.k = self._regularizer.k
+        self.u0 = self._regularizer.u0
+        self.y0 = self._regularizer.y0
+        self.Nx = self._regularizer.Nx
+        self.w = self._regularizer.w
+        self.maxinfo = self._regularizer.maxinfo
     
     def norm(self,u):
         return self._regularizer.norm(u)
@@ -362,6 +363,14 @@ class concentration_simple:
     @property
     def A(self):
         return self.F
+    
+    @property
+    def maxinfo(self):
+        '''
+        estimate the maximum number of good parameters that can be
+        extracted from the data using this parameterization.
+        '''
+        return self.Nw # number of data points between xmin, xmax
 
     def norm(self,u):
         return np.mean(u**2)**0.5
@@ -389,15 +398,8 @@ class concentration_smooth:
     
     @property
     def F(self):
-        ix = np.searchsorted(self.w,self.x,side='right')
-        ix_l = np.searchsorted(self.w,self.x,side='left')
-        is_in_concentration = np.logical_or(np.logical_and(ix > 0, ix < self.Nw),ix != ix_l)
-        ix = ix - 1
-        ix[ix == self.Nw - 1] = self.Nw - 2 # if equal to last bin edge, assign to last bin
-        v = np.arange(self.Nx)
-        ix = ix[is_in_concentration]
-        v = v[is_in_concentration]
-        u = (self.x[is_in_concentration] - self.w[ix]) * (1/self.dw)
+        ix, v = self._xindex()
+        u = (self.x[v] - self.w[ix]) * (1/self.dw)
         return sp.csr_matrix((np.concatenate((1-u,u)), (np.concatenate((v,v)), np.concatenate((ix,ix+1)))),shape = (self.Nx, self.Nw))
     
     @property
@@ -446,15 +448,44 @@ class concentration_smooth:
             A_tmp = A_tmp[:,1:]
         return A_tmp
     
+    @property
+    def maxinfo(self):
+        '''
+        estimate the maximum number of good parameters that can be
+        extracted from the data using this parameterization.
+        '''
+        ix = self._xindex()[0]
+        Nd = ix.size # number of data points in range
+        
+        return min([Nd,self.k]) # Whichever is less: number of free control points or number of data points between xmin, xmax
+        
+        '''
+        note, this does not consider what happens when a data point
+        is on the boundary, and the boundary condition is set to zero
+        (in that case, the data point no longer contributes)
+        '''
+    
     def norm(self,u):
         return np.mean(u**2)**0.5
+    
+    def _xindex(self):
+        # helper function for self.F
+        ix = np.searchsorted(self.w,self.x,side='right')
+        ix_l = np.searchsorted(self.w,self.x,side='left')
+        is_in_concentration = np.logical_or(np.logical_and(ix > 0, ix < self.Nw),ix != ix_l)
+        ix = ix - 1
+        ix[ix == self.Nw - 1] = self.Nw - 2 # if equal to last bin edge, assign to last bin
+        v = np.arange(self.Nx)
+        ix = ix[is_in_concentration]
+        v = v[is_in_concentration]
+        return ix, v
 
 
 
 class profile_class:
     
     def __init__(self, profile_type, *arg, **kwarg):
-        self.profile_type = profile_type
+        self.profile_type = profile_type.lower()
         
         if self.profile_type == 'simple':
             self._regularizer = profile_simple(*arg, **kwarg)
@@ -469,13 +500,14 @@ class profile_class:
             raise ValueError('unexpected profile type')
         
         # cache values of dependent properties for faster access
-        self.A = self._regularizer.A;
-        self.L = self._regularizer.L;
-        self.k = self._regularizer.k;
-        self.u0 = self._regularizer.u0;
-        self.y0 = self._regularizer.y0;
-        self.Nq = self._regularizer.Nq;
-        self.w = self._regularizer.w;
+        self.A = self._regularizer.A
+        self.L = self._regularizer.L
+        self.k = self._regularizer.k
+        self.u0 = self._regularizer.u0
+        self.y0 = self._regularizer.y0
+        self.Nq = self._regularizer.Nq
+        self.w = self._regularizer.w
+        self.maxinfo = self._regularizer.maxinfo
         
     def norm(self,u):
         return self._regularizer.norm(u)
@@ -526,6 +558,14 @@ class profile_simple:
     def A(self):
         return self.F
         
+    @property
+    def maxinfo(self):
+        '''
+        estimate the maximum number of good parameters that can be
+        extracted from the data using this parameterization.
+        '''
+        return self.q.size # number of data points
+    
     def norm(self,u):
         return np.mean(u**2)**0.5
 
@@ -588,6 +628,14 @@ class profile_smooth:
     @property
     def A(self):
         return self.F
+    
+    @property
+    def maxinfo(self):
+        '''
+        estimate the maximum number of good parameters that can be
+        extracted from the data using this parameterization.
+        '''
+        return min([self.k,self.Nq]); # whichever is less: number of data points, or number of free parameters
     
     def norm(self,u):
         return np.mean(u**2)**0.5
@@ -658,6 +706,16 @@ class profile_real_space:
         if self.is_zero_at_r0:
             A_tmp = A_tmp[:,1:]
         return A_tmp
+    
+    @property
+    def maxinfo(self):
+        '''
+        estimate the maximum number of good parameters that can be
+        extracted from the data using this parameterization.
+        '''
+        Ns = np.ptp(self.q)*self.dmax/np.pi; # number of Shannon channels
+
+        return min([self.k,Ns,self.Nq]); # whichever is less: number of Shannon channels, number of data points, or number of free parameters
     
     def norm(self,u):
         weight = 4 * np.pi * self.dw * np.ones(self.Nw)
