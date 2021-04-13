@@ -18,6 +18,17 @@ classdef REGALS
                 end
             end
         end
+        
+        function Mix = autoEstimateLambda(obj,Mix)
+            Mix.profileLambda = Mix.estimateProfileLambda(obj.err);
+            Mix.concentrationLambda = Mix.estimateConcentrationLambda(obj.err);
+
+            NewMix = obj.step(Mix); % take one step and re-estimate
+
+            Mix.profileLambda = NewMix.estimateProfileLambda(obj.err);
+            Mix.concentrationLambda = NewMix.estimateConcentrationLambda(obj.err);
+            
+        end
 
         function Mix = fitConcentrations(obj,Mix)
             %FITCONCENTRATIONS
@@ -50,6 +61,7 @@ classdef REGALS
             u = mat2cell(u,Mix.kProfile,1);
 
             % normalize
+            Mix.uProfile = u;
             n = Mix.profileNorm;
             for j=1:Mix.Nc
                 u{j} = u{j}/n(j);

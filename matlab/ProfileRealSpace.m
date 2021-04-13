@@ -25,6 +25,8 @@ classdef ProfileRealSpace < ProfileClass
 
         % DEFINED BY SUPERCLASS:
         % Nq % = length(q)
+        
+        maxinfo
     end
     properties(Dependent = true, Access = private)
         dw % spacing between samples in w vector
@@ -53,6 +55,15 @@ classdef ProfileRealSpace < ProfileClass
 
         function val = get.k(obj)
             val = obj.Nw - obj.isZeroAtDmax - obj.isZeroAtR0;
+        end
+        
+        function val = get.maxinfo(obj)
+            % estimate the maximum number of good parameters that can be
+            % extracted from the data using this parameterization.
+            
+            Ns = range(obj.q)*obj.dmax/pi; % number of Shannon channels
+
+            val = min([obj.k,Ns,obj.Nq]); % whichever is less: number of Shannon channels, number of data points, or number of free parameters
         end
 
         function val = get.dw(obj)

@@ -17,6 +17,8 @@ classdef ProfileSimple < ProfileClass
 
         % DEFINED BY SUPERCLASS
         % Nq  % = length(q)
+        
+        maxinfo
     end
 
     methods
@@ -53,6 +55,13 @@ classdef ProfileSimple < ProfileClass
         end
         function val = norm(~,u)
             val = sqrt(mean(u(:).*u(:)));
+        end
+        
+        function val = get.maxinfo(obj)
+            % estimate the maximum number of good parameters that can be
+            % extracted from the data using this parameterization.
+
+            val = numel(obj.q); % number of data points
         end
 
     end

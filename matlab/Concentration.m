@@ -5,6 +5,7 @@ classdef Concentration
     end
     
     properties(SetAccess = private)
+        type % simple or smooth
         A    % cache obj.regularizer.A;
         L    % cache obj.regularizer.L;
         k    % cache obj.regularizer.k;
@@ -12,19 +13,19 @@ classdef Concentration
         y0   % cache obj.regularizer.y0;
         Nx   % cache obj.regularizer.Nx;
         w    % cache obj.regularizer.w;
+        maxinfo % cache obj.regularizer.maxinfo
     end
     
     methods
         function obj = Concentration(x,type,varargin)
-            if nargin > 1
-                switch lower(type)
-                    case {'','simple'}
-                        obj.regularizer = ConcentrationSimple('x',x,varargin{:});
-                    case 'smooth'
-                        obj.regularizer = ConcentrationSmooth('x',x,varargin{:});
-                    otherwise
-                        error('unknown concentration regularizer');
-                end
+            obj.type = lower(type);
+            switch obj.type
+                case {'','simple'}
+                    obj.regularizer = ConcentrationSimple('x',x,varargin{:});
+                case 'smooth'
+                    obj.regularizer = ConcentrationSmooth('x',x,varargin{:});
+                otherwise
+                    error('unknown concentration regularizer');
             end
             
             obj.A = obj.regularizer.A;
@@ -34,30 +35,14 @@ classdef Concentration
             obj.y0 = obj.regularizer.y0;
             obj.Nx = obj.regularizer.Nx;
             obj.w = obj.regularizer.w;
+            obj.maxinfo = obj.regularizer.maxinfo;
             
         end
         
-        function val = get.A(obj)
-            val = obj.regularizer.A;
-        end
-        function val = get.L(obj)
-            val = obj.regularizer.L;
-        end
-        function val = get.k(obj)
-            val = obj.regularizer.k;
-        end
-        function val = get.u0(obj)
-            val = obj.regularizer.u0;
-        end
-        function val = get.y0(obj)
-            val = obj.regularizer.y0;
-        end
-        function val = get.Nx(obj)
-            val = obj.regularizer.Nx;
-        end
         function val = norm(obj,u)
             val = obj.regularizer.norm(u);
         end
+        
     end
     
 end

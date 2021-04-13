@@ -89,6 +89,23 @@ classdef Mixture
         end
 
         function ll = estimateConcentrationLambda(obj,err,ng)
+            
+            if nargin < 3 || isempty(ng) % need to estimate ng first
+                ng = zeros(1,obj.Nc);
+                for j=1:obj.Nc
+                    C = obj.Components(j).Concentration;
+                    switch C.type
+                        case 'simple' % no regularization
+                            ng(j) = Inf;
+                        case 'smooth' % just a little smoothing
+                            ng(j) = 0.8*C.maxinfo;
+                        otherwise
+                            error('concentration type not implemented?');
+                    end
+                end
+                fprintf(1,'estimating concentration lambda with ng = %s\n',mat2str(ng));
+            end
+            
             AA = obj.concentrationProblem(sparse(obj.Nq,obj.Nx),err);
 
             % break into sub-matrices for each component
@@ -103,6 +120,26 @@ classdef Mixture
         end
 
         function ll = estimateProfileLambda(obj,err,ng)
+            
+            if nargin < 3 || isempty(ng) % need to estimate ng first
+                ng = zeros(1,obj.Nc);
+                for j=1:obj.Nc
+                    P = obj.Components(j).Profile;
+                    switch P.type
+                        case 'simple' % no regularization
+                            ng(j) = Inf;
+                        case 'smooth' % just a little smoothing
+                            ng(j) = 0.9*P.maxinfo;
+                        case 'realspace' % aggressive smoothing if Ns > 10
+                            ng(j) = min([10,0.9*P.maxinfo]);
+                        otherwise
+                            error('profile type not implemented?');
+                    end
+                    
+                end
+                fprintf(1,'estimating profile lambda with ng = %s\n',mat2str(ng));
+            end
+            
             AA = obj.profileProblem(sparse(obj.Nq,obj.Nx),err);
 
             % break into sub-matrices for each component

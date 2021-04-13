@@ -13,6 +13,20 @@ class regals:
         self.I = I
         self.err = err
     
+    def auto_estimate_lambda(self, mix):
+        
+        mix = deepcopy(mix)
+        
+        mix.lambda_profile = mix.estimate_profile_lambda(self.err)
+        mix.lambda_concentration = mix.estimate_concentration_lambda(self.err)
+        
+        new_mix = self.step(mix)[0] # take one step and re-estimate
+        
+        mix.lambda_profile = new_mix.estimate_profile_lambda(self.err)
+        mix.lambda_concentration = new_mix.estimate_concentration_lambda(self.err)
+        
+        return mix
+    
     def fit_concentrations(self, mix):
         
         mix = deepcopy(mix)
@@ -38,6 +52,7 @@ class regals:
         
         u = np.split(u, np.cumsum(mix.k_profile)[:-1])
         
+        mix.u_profile = u
         n = mix.norm_profile
         u = [uj / nj if nj != 0 else uj for uj, nj in zip(u, n)]
         
@@ -61,10 +76,10 @@ class regals:
     
     def run(self, mix, stop_fun = None, update_fun = None):
         
-        if stop_fun == None:
+        if stop_fun is None:
             stop_fun = lambda num_iter, params: [num_iter >= 10, 'max_iter']
         
-        if update_fun == None:
+        if update_fun is None:
             update_fun = lambda num_iter, new_mix, params, resid: True
         
         num_iter = 0
@@ -127,7 +142,20 @@ class mixture:
     def I_reg(self):
         return self.profiles @ self.concentrations.T
     
-    def estimate_concentration_lambda(self,err,ng):
+    def estimate_concentration_lambda(self,err,ng = None):
+        
+        if ng is None:
+            ng = np.zeros(self.Nc)
+            for j in range(self.Nc):
+                C = self.components[j].concentration
+                if C.reg_type == 'simple':
+                    ng[j] = np.Inf
+                elif C.reg_type == 'smooth':
+                    ng[j] = 0.8 * C.maxinfo
+                else:
+                    raise ValueError('unexpected concentration type for lambda estimation')
+            print('estimating concentration lambda with ng = %s'%(np.array2string(ng)))
+        
         AA = self.concentration_problem(np.zeros((self.Nq,self.Nx)),err,False).todense()
         
         split_pos = np.cumsum(self.k_concentration)[:-1]
@@ -141,7 +169,22 @@ class mixture:
         
         return ll
     
-    def estimate_profile_lambda(self,err,ng):
+    def estimate_profile_lambda(self,err,ng=None):
+        
+        if ng is None:
+            ng = np.zeros(self.Nc)
+            for j in range(self.Nc):
+                P = self.components[j].profile
+                if P.reg_type == 'simple':
+                    ng[j] = np.Inf # no regularization
+                elif P.reg_type == 'smooth':
+                    ng[j] = 0.9 * P.maxinfo # just a little smoothing
+                elif P.reg_type == 'realspace':
+                    ng[j] = min([10,0.9*P.maxinfo]) # aggressive smoothing if Ns > 10
+                else:
+                    raise ValueError('unexpected profile type for lambda estimation')
+            print('estimating profile lambda with ng = %s'%(np.array2string(ng)))
+        
         AA = self.profile_problem(np.zeros((self.Nq,self.Nx)),err,False).todense()
         
         split_pos = np.cumsum(self.k_profile)[:-1]
@@ -288,26 +331,29 @@ class component:
 
 class concentration_class:
     
-    def __init__(self, concentration_type, *arg, **kwarg):
-        self.concentration_type = concentration_type
+    def __init__(self, reg_type, *arg, **kwarg):
         
-        if self.concentration_type == 'simple':
-            self._regularizer = concentration_simple(*arg, **kwarg)
+        _regularizer_classes = {
+            'simple'    : concentration_simple,
+            'smooth'    : concentration_smooth,
+            }
         
-        elif self.concentration_type == 'smooth':
-            self._regularizer = concentration_smooth(*arg, **kwarg)
+        self.reg_type = reg_type.lower()
         
+        if reg_type in _regularizer_classes:
+            self._regularizer = _regularizer_classes[reg_type](*arg, **kwarg)
         else:
             raise ValueError('unexpected concentration type')
         
         # cache values of dependent properties for faster access
-        self.A = self._regularizer.A;
-        self.L = self._regularizer.L;
-        self.k = self._regularizer.k;
-        self.u0 = self._regularizer.u0;
-        self.y0 = self._regularizer.y0;
-        self.Nx = self._regularizer.Nx;
-        self.w = self._regularizer.w;
+        self.A = self._regularizer.A
+        self.L = self._regularizer.L
+        self.k = self._regularizer.k
+        self.u0 = self._regularizer.u0
+        self.y0 = self._regularizer.y0
+        self.Nx = self._regularizer.Nx
+        self.w = self._regularizer.w
+        self.maxinfo = self._regularizer.maxinfo
     
     def norm(self,u):
         return self._regularizer.norm(u)
@@ -362,6 +408,14 @@ class concentration_simple:
     @property
     def A(self):
         return self.F
+    
+    @property
+    def maxinfo(self):
+        '''
+        estimate the maximum number of good parameters that can be
+        extracted from the data using this parameterization.
+        '''
+        return self.Nw # number of data points between xmin, xmax
 
     def norm(self,u):
         return np.mean(u**2)**0.5
@@ -389,15 +443,8 @@ class concentration_smooth:
     
     @property
     def F(self):
-        ix = np.searchsorted(self.w,self.x,side='right')
-        ix_l = np.searchsorted(self.w,self.x,side='left')
-        is_in_concentration = np.logical_or(np.logical_and(ix > 0, ix < self.Nw),ix != ix_l)
-        ix = ix - 1
-        ix[ix == self.Nw - 1] = self.Nw - 2 # if equal to last bin edge, assign to last bin
-        v = np.arange(self.Nx)
-        ix = ix[is_in_concentration]
-        v = v[is_in_concentration]
-        u = (self.x[is_in_concentration] - self.w[ix]) * (1/self.dw)
+        ix, v = self._xindex()
+        u = (self.x[v] - self.w[ix]) * (1/self.dw)
         return sp.csr_matrix((np.concatenate((1-u,u)), (np.concatenate((v,v)), np.concatenate((ix,ix+1)))),shape = (self.Nx, self.Nw))
     
     @property
@@ -446,36 +493,66 @@ class concentration_smooth:
             A_tmp = A_tmp[:,1:]
         return A_tmp
     
+    @property
+    def maxinfo(self):
+        '''
+        estimate the maximum number of good parameters that can be
+        extracted from the data using this parameterization.
+        '''
+        ix = self._xindex()[0]
+        Nd = ix.size # number of data points in range
+        
+        return min([Nd,self.k]) # Whichever is less: number of free control points or number of data points between xmin, xmax
+        
+        '''
+        note, this does not consider what happens when a data point
+        is on the boundary, and the boundary condition is set to zero
+        (in that case, the data point no longer contributes)
+        '''
+    
     def norm(self,u):
         return np.mean(u**2)**0.5
+    
+    def _xindex(self):
+        # helper function for self.F
+        ix = np.searchsorted(self.w,self.x,side='right')
+        ix_l = np.searchsorted(self.w,self.x,side='left')
+        is_in_concentration = np.logical_or(np.logical_and(ix > 0, ix < self.Nw),ix != ix_l)
+        ix = ix - 1
+        ix[ix == self.Nw - 1] = self.Nw - 2 # if equal to last bin edge, assign to last bin
+        v = np.arange(self.Nx)
+        ix = ix[is_in_concentration]
+        v = v[is_in_concentration]
+        return ix, v
 
 
 
 class profile_class:
     
-    def __init__(self, profile_type, *arg, **kwarg):
-        self.profile_type = profile_type
+    def __init__(self, reg_type, *arg, **kwarg):
         
-        if self.profile_type == 'simple':
-            self._regularizer = profile_simple(*arg, **kwarg)
+        _regularizer_classes = {
+            'simple'    : profile_simple,
+            'smooth'    : profile_smooth,
+            'realspace' : profile_real_space,
+            }
         
-        elif self.profile_type == 'smooth':
-            self._regularizer = profile_smooth(*arg, **kwarg)
+        self.reg_type = reg_type.lower()
         
-        elif self.profile_type == 'realspace':
-            self._regularizer = profile_real_space(*arg, **kwarg)
-        
+        if reg_type in _regularizer_classes:
+            self._regularizer = _regularizer_classes[reg_type](*arg, **kwarg)
         else:
             raise ValueError('unexpected profile type')
         
         # cache values of dependent properties for faster access
-        self.A = self._regularizer.A;
-        self.L = self._regularizer.L;
-        self.k = self._regularizer.k;
-        self.u0 = self._regularizer.u0;
-        self.y0 = self._regularizer.y0;
-        self.Nq = self._regularizer.Nq;
-        self.w = self._regularizer.w;
+        self.A = self._regularizer.A
+        self.L = self._regularizer.L
+        self.k = self._regularizer.k
+        self.u0 = self._regularizer.u0
+        self.y0 = self._regularizer.y0
+        self.Nq = self._regularizer.Nq
+        self.w = self._regularizer.w
+        self.maxinfo = self._regularizer.maxinfo
         
     def norm(self,u):
         return self._regularizer.norm(u)
@@ -526,6 +603,14 @@ class profile_simple:
     def A(self):
         return self.F
         
+    @property
+    def maxinfo(self):
+        '''
+        estimate the maximum number of good parameters that can be
+        extracted from the data using this parameterization.
+        '''
+        return self.q.size # number of data points
+    
     def norm(self,u):
         return np.mean(u**2)**0.5
 
@@ -588,6 +673,14 @@ class profile_smooth:
     @property
     def A(self):
         return self.F
+    
+    @property
+    def maxinfo(self):
+        '''
+        estimate the maximum number of good parameters that can be
+        extracted from the data using this parameterization.
+        '''
+        return min([self.k,self.Nq]); # whichever is less: number of data points, or number of free parameters
     
     def norm(self,u):
         return np.mean(u**2)**0.5
@@ -658,6 +751,16 @@ class profile_real_space:
         if self.is_zero_at_r0:
             A_tmp = A_tmp[:,1:]
         return A_tmp
+    
+    @property
+    def maxinfo(self):
+        '''
+        estimate the maximum number of good parameters that can be
+        extracted from the data using this parameterization.
+        '''
+        Ns = np.ptp(self.q)*self.dmax/np.pi; # number of Shannon channels
+
+        return min([self.k,Ns,self.Nq]); # whichever is less: number of Shannon channels, number of data points, or number of free parameters
     
     def norm(self,u):
         weight = 4 * np.pi * self.dw * np.ones(self.Nw)
