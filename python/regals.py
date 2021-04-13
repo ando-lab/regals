@@ -331,17 +331,17 @@ class component:
 
 class concentration_class:
     
-    _regularizer_classes = {
-        'simple'    : concentration_simple,
-        'smooth'    : concentration_smooth,
-        }
-    
     def __init__(self, reg_type, *arg, **kwarg):
+        
+        _regularizer_classes = {
+            'simple'    : concentration_simple,
+            'smooth'    : concentration_smooth,
+            }
+        
         self.reg_type = reg_type.lower()
         
-        if type in self._regularizer_classes:
-            self._regularizer = self._regularizer_classes[reg_type](*arg, **kwarg)
-        
+        if reg_type in _regularizer_classes:
+            self._regularizer = _regularizer_classes[reg_type](*arg, **kwarg)
         else:
             raise ValueError('unexpected concentration type')
         
@@ -529,17 +529,18 @@ class concentration_smooth:
 
 class profile_class:
     
-    _regularizer_classes = {
-        'simple'    : profile_simple,
-        'smooth'    : profile_smooth,
-        'realspace' : profile_real_space,
-        }
-    
     def __init__(self, reg_type, *arg, **kwarg):
+        
+        _regularizer_classes = {
+            'simple'    : profile_simple,
+            'smooth'    : profile_smooth,
+            'realspace' : profile_real_space,
+            }
+        
         self.reg_type = reg_type.lower()
         
-        if reg_type in self._regularizer_classes:
-            self._regularizer = self._regularizer_classes[reg_type](*arg, **kwarg)
+        if reg_type in _regularizer_classes:
+            self._regularizer = _regularizer_classes[reg_type](*arg, **kwarg)
         else:
             raise ValueError('unexpected profile type')
         
