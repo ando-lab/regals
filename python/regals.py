@@ -20,7 +20,7 @@ class regals:
         mix.lambda_profile = mix.estimate_profile_lambda(self.err)
         mix.lambda_concentration = mix.estimate_concentration_lambda(self.err)
         
-        new_mix = self.step(mix) # take one step and re-estimate
+        new_mix = self.step(mix)[0] # take one step and re-estimate
         
         mix.lambda_profile = new_mix.estimate_profile_lambda(self.err)
         mix.lambda_concentration = new_mix.estimate_concentration_lambda(self.err)
@@ -145,7 +145,7 @@ class mixture:
     def estimate_concentration_lambda(self,err,ng = None):
         
         if ng is None:
-            ng = np.zeros(1,self.Nc)
+            ng = np.zeros(self.Nc)
             for j in range(self.Nc):
                 C = self.components[j].concentration
                 if C.reg_type == 'simple':
@@ -172,7 +172,7 @@ class mixture:
     def estimate_profile_lambda(self,err,ng=None):
         
         if ng is None:
-            ng = np.zeros(1,self.Nc)
+            ng = np.zeros(self.Nc)
             for j in range(self.Nc):
                 P = self.components[j].profile
                 if P.reg_type == 'simple':
