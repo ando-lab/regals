@@ -61,10 +61,10 @@ class regals:
     
     def run(self, mix, stop_fun = None, update_fun = None):
         
-        if stop_fun == None:
+        if stop_fun is None:
             stop_fun = lambda num_iter, params: [num_iter >= 10, 'max_iter']
         
-        if update_fun == None:
+        if update_fun is None:
             update_fun = lambda num_iter, new_mix, params, resid: True
         
         num_iter = 0
@@ -127,7 +127,20 @@ class mixture:
     def I_reg(self):
         return self.profiles @ self.concentrations.T
     
-    def estimate_concentration_lambda(self,err,ng):
+    def estimate_concentration_lambda(self,err,ng = None):
+        
+        if ng is None:
+            ng = np.zeros(1,self.Nc)
+            for j in range(self.Nc):
+                C = self.components[j].concentration
+                if C.concentration_type == 'simple':
+                    ng[j] = np.Inf
+                elif C.concentration_type == 'smooth':
+                    ng[j] = 0.8 * C.maxinfo
+                else:
+                    raise ValueError('unexpected concentration type for lambda estimation')
+            print('estimating concentration lambda with ng = %s'%(np.array2string(ng)))
+        
         AA = self.concentration_problem(np.zeros((self.Nq,self.Nx)),err,False).todense()
         
         split_pos = np.cumsum(self.k_concentration)[:-1]
@@ -141,7 +154,22 @@ class mixture:
         
         return ll
     
-    def estimate_profile_lambda(self,err,ng):
+    def estimate_profile_lambda(self,err,ng=None):
+        
+        if ng is None:
+            ng = np.zeros(1,self.Nc)
+            for j in range(self.Nc):
+                P = self.components[j].profile
+                if P.profile_type == 'simple':
+                    ng[j] = np.Inf # no regularization
+                elif P.profile_type == 'smooth':
+                    ng[j] = 0.9 * P.maxinfo # just a little smoothing
+                elif P.profile_type == 'realspace':
+                    ng[j] = min([10,0.9*P.maxinfo]) # aggressive smoothing if Ns > 10
+                else:
+                    raise ValueError('unexpected profile type for lambda estimation')
+            print('estimating profile lambda with ng = %s'%(np.array2string(ng)))
+        
         AA = self.profile_problem(np.zeros((self.Nq,self.Nx)),err,False).todense()
         
         split_pos = np.cumsum(self.k_profile)[:-1]
