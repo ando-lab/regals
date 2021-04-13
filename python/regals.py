@@ -13,6 +13,20 @@ class regals:
         self.I = I
         self.err = err
     
+    def auto_estimate_lambda(self, mix):
+        
+        mix = deepcopy(mix)
+        
+        mix.lambda_profile = mix.estimate_profile_lambda(self.err)
+        mix.lambda_concentration = mix.estimate_concentration_lambda(self.err)
+        
+        new_mix = self.step(mix) # take one step and re-estimate
+        
+        mix.lambda_profile = new_mix.estimate_profile_lambda(self.err)
+        mix.lambda_concentration = new_mix.estimate_concentration_lambda(self.err)
+        
+        return mix
+    
     def fit_concentrations(self, mix):
         
         mix = deepcopy(mix)
@@ -38,6 +52,7 @@ class regals:
         
         u = np.split(u, np.cumsum(mix.k_profile)[:-1])
         
+        mix.u_profile = u
         n = mix.norm_profile
         u = [uj / nj if nj != 0 else uj for uj, nj in zip(u, n)]
         
