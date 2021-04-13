@@ -133,9 +133,9 @@ class mixture:
             ng = np.zeros(1,self.Nc)
             for j in range(self.Nc):
                 C = self.components[j].concentration
-                if C.concentration_type == 'simple':
+                if C.reg_type == 'simple':
                     ng[j] = np.Inf
-                elif C.concentration_type == 'smooth':
+                elif C.reg_type == 'smooth':
                     ng[j] = 0.8 * C.maxinfo
                 else:
                     raise ValueError('unexpected concentration type for lambda estimation')
@@ -160,11 +160,11 @@ class mixture:
             ng = np.zeros(1,self.Nc)
             for j in range(self.Nc):
                 P = self.components[j].profile
-                if P.profile_type == 'simple':
+                if P.reg_type == 'simple':
                     ng[j] = np.Inf # no regularization
-                elif P.profile_type == 'smooth':
+                elif P.reg_type == 'smooth':
                     ng[j] = 0.9 * P.maxinfo # just a little smoothing
-                elif P.profile_type == 'realspace':
+                elif P.reg_type == 'realspace':
                     ng[j] = min([10,0.9*P.maxinfo]) # aggressive smoothing if Ns > 10
                 else:
                     raise ValueError('unexpected profile type for lambda estimation')
@@ -316,14 +316,16 @@ class component:
 
 class concentration_class:
     
-    def __init__(self, concentration_type, *arg, **kwarg):
-        self.concentration_type = concentration_type.lower()
+    _regularizer_classes = {
+        'simple'    : concentration_simple,
+        'smooth'    : concentration_smooth,
+        }
+    
+    def __init__(self, reg_type, *arg, **kwarg):
+        self.reg_type = reg_type.lower()
         
-        if self.concentration_type == 'simple':
-            self._regularizer = concentration_simple(*arg, **kwarg)
-        
-        elif self.concentration_type == 'smooth':
-            self._regularizer = concentration_smooth(*arg, **kwarg)
+        if type in self._regularizer_classes:
+            self._regularizer = self._regularizer_classes[reg_type](*arg, **kwarg)
         
         else:
             raise ValueError('unexpected concentration type')
@@ -512,18 +514,17 @@ class concentration_smooth:
 
 class profile_class:
     
-    def __init__(self, profile_type, *arg, **kwarg):
-        self.profile_type = profile_type.lower()
+    _regularizer_classes = {
+        'simple'    : profile_simple,
+        'smooth'    : profile_smooth,
+        'realspace' : profile_real_space,
+        }
+    
+    def __init__(self, reg_type, *arg, **kwarg):
+        self.reg_type = reg_type.lower()
         
-        if self.profile_type == 'simple':
-            self._regularizer = profile_simple(*arg, **kwarg)
-        
-        elif self.profile_type == 'smooth':
-            self._regularizer = profile_smooth(*arg, **kwarg)
-        
-        elif self.profile_type == 'realspace':
-            self._regularizer = profile_real_space(*arg, **kwarg)
-        
+        if reg_type in self._regularizer_classes:
+            self._regularizer = self._regularizer_classes[reg_type](*arg, **kwarg)
         else:
             raise ValueError('unexpected profile type')
         
