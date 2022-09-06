@@ -69,3 +69,16 @@ Thompson, M. C. _et al._ (2019). Temperature-Jump Solution X-Ray Scattering Reve
 
 >[Fraser, Anfinrud & Thompson, 2019]: https://doi.org/10.35092/yhjc.9177143.v1
 Fraser, J. Anfinrud, P. & Thompson, M. (2019). X-ray scattering curves (SAXS/WAXS) used for the analysis described in _Temperature-Jump Solution X-ray Scattering Reveals Distinct Motions in a Dynamic Enzyme_. The NIH Figshare Archive. Dataset. https://doi.org/10.35092/yhjc.9177143.v1
+
+## EFA demo
+
+**Experiment:** SAXS with in-line size-exclusion chromatography (SEC) collected on Phenylalanine hydroxylase (PheH) in 0 mM phenylalanine (from [Meisburger et al. 2016]).
+
+**Files:**
+- `data/PheH_0phe_SEC.mat` - input data (MATLAB-formatted hdf5)
+- `PheH_0phe_SEC.ipynb` - jupyter notebook
+- `PheH_0phe_SEC.mlx` - MATLAB live notebook
+
+_**Data is included here with permission from the authors. If you use it please cite the original publication:**_
+> [Meisburger et al. 2016]: https://doi.org/10.1021/jacs.6b01563
+Meisburger, S. P. _et al._ (2016). Domain Movements upon Activation of Phenylalanine Hydroxylase Characterized by Crystallography and Chromatography-Coupled Small-Angle X-ray Scattering. *J Am Chem Soc* 138, 6506–6516. https://doi.org/10.1021/jacs.6b01563
